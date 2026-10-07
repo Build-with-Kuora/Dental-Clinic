@@ -17,13 +17,13 @@ export function Hero() {
       <div className="container hero-inner">
         <div className="hero-copy">
           <h1 id="hero-title" className="hero-title">
-            Your smile is<br />our <em>passion.</em>
+            Gentle dental care,<br /><em>right here in Molo.</em>
           </h1>
           <p className="hero-lead">
-            Gentle, modern dental care from Dr. Capizonda and team. Book a visit in under a minute, and we will confirm by text.
+            Meet Dr. Capizonda and team. Book a visit in under a minute, and we will confirm by text.
           </p>
           <div className="hero-actions">
-            <Link className="btn btn-gold btn-lg" href="/book">Book Your Appointment <ArrowRight /></Link>
+            <Link className="btn btn-gold btn-lg" href="/book">Book Appointment <ArrowRight /></Link>
             <a className="btn btn-ghost btn-lg" href={CLINIC.phoneTel}><PhoneIcon /> {CLINIC.phoneDisplay}</a>
           </div>
           <ul className="hero-facts">
@@ -39,18 +39,12 @@ export function Hero() {
 }
 
 export function Strip() {
-  const items = [
-    ["PDA", "Iloilo Chapter member"],
-    ["DMD", "Iloilo Doctor's College"],
-    ["UV + Autoclave", "Double sterilization"],
-    ["6 days", "Open Monday to Saturday"],
-  ];
   return (
-    <section className="strip" aria-label="Highlights">
+    <section className="strip" aria-label="What to expect on your first visit">
       <div className="container strip-inner">
-        {items.map(([k, v]) => (
-          <div className="strip-item" key={k}><span className="strip-k">{k}</span><span className="strip-v">{v}</span></div>
-        ))}
+        <p>
+          <strong>First visit?</strong> We start with a check-up, show you what we see on screen, and explain every step before we treat.
+        </p>
       </div>
     </section>
   );

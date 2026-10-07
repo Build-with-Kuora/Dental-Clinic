@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const LINKS = [
+  { id: "dentist", label: "Our Dentist" },
   { id: "services", label: "Services" },
   { id: "technology", label: "Why Us" },
-  { id: "dentist", label: "Our Dentist" },
   { id: "visit", label: "Visit" },
   { id: "faq", label: "FAQ" },
 ];

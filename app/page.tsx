@@ -7,9 +7,9 @@ export default function Home() {
       <main id="main">
         <Hero />
         <Strip />
+        <Dentist />
         <Services />
         <Technology />
-        <Dentist />
         <Visit />
         <Faq />
         <CtaBand />
