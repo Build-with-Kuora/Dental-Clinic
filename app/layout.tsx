@@ -37,6 +37,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Metadata cannot read CSS variables: keep in sync with --navy-700 in app/globals.css.
   themeColor: "#1C3E61",
   viewportFit: "cover",
 };

@@ -16,15 +16,14 @@ export function Hero() {
 
       <div className="container hero-inner">
         <div className="hero-copy">
-          <p className="eyebrow eyebrow-light">Now accepting patients in Molo, Iloilo City</p>
           <h1 id="hero-title" className="hero-title">
-            Your smile is<br />our <em>passion.</em>
+            Gentle dental care,<br /><em>right here in Molo.</em>
           </h1>
           <p className="hero-lead">
-            Gentle, modern dental care from Dr. Capizonda and team. Book a visit in under a minute, and we will confirm by text.
+            Meet Dr. Capizonda and team. Book a visit in under a minute, and we will confirm by text.
           </p>
           <div className="hero-actions">
-            <Link className="btn btn-gold btn-lg" href="/book">Book Your Appointment <ArrowRight /></Link>
+            <Link className="btn btn-gold btn-lg" href="/book">Book Appointment <ArrowRight /></Link>
             <a className="btn btn-ghost btn-lg" href={CLINIC.phoneTel}><PhoneIcon /> {CLINIC.phoneDisplay}</a>
           </div>
           <ul className="hero-facts">
@@ -40,18 +39,12 @@ export function Hero() {
 }
 
 export function Strip() {
-  const items = [
-    ["PDA", "Iloilo Chapter member"],
-    ["DMD", "Iloilo Doctor's College"],
-    ["UV + Autoclave", "Double sterilization"],
-    ["6 days", "Open Monday to Saturday"],
-  ];
   return (
-    <section className="strip" aria-label="Highlights">
+    <section className="strip" aria-label="What to expect on your first visit">
       <div className="container strip-inner">
-        {items.map(([k, v]) => (
-          <div className="strip-item" key={k}><span className="strip-k">{k}</span><span className="strip-v">{v}</span></div>
-        ))}
+        <p>
+          <strong>First visit?</strong> We start with a check-up, show you what we see on screen, and explain every step before we treat.
+        </p>
       </div>
     </section>
   );
@@ -62,7 +55,6 @@ export function Services() {
     <section className="section" id="services" aria-labelledby="services-title">
       <div className="container">
         <div className="section-head reveal">
-          <p className="eyebrow">Services</p>
           <h2 id="services-title" className="section-title">Care for every smile in the family.</h2>
           <p className="section-lead">From your first check-up to a brighter, straighter smile. Tap any service to book it.</p>
         </div>
@@ -97,7 +89,6 @@ export function Technology() {
     <section className="section section-navy" id="technology" aria-labelledby="tech-title">
       <div className="container tech-inner">
         <div className="tech-copy reveal">
-          <p className="eyebrow eyebrow-light">Why choose us</p>
           <h2 id="tech-title" className="section-title light">We invested in technology <em>so you can relax.</em></h2>
           <p className="section-lead light">
             What sets us apart is the equipment behind every visit. Clearer diagnosis, cleaner instruments, and a more efficient appointment for you.
@@ -105,9 +96,8 @@ export function Technology() {
           <Link className="btn btn-gold" href="/book?service=checkup">Book a check-up</Link>
         </div>
         <ol className="tech-list">
-          {TECH.map(([title, body], i) => (
+          {TECH.map(([title, body]) => (
             <li className="tech-item reveal" key={title}>
-              <span className="tech-num">0{i + 1}</span>
               <div><h3>{title}</h3><p>{body}</p></div>
             </li>
           ))}
@@ -137,7 +127,6 @@ export function Dentist() {
 
         <div className="dentist-copy">
           <div className="reveal">
-            <p className="eyebrow">Get to know your dentist</p>
             <h2 id="dentist-title" className="section-title">Hi, I&apos;m <span className="script-inline">Dr. Capizonda.</span></h2>
             <blockquote className="dentist-quote">
               “My mission is to reduce early extractions of permanent teeth caused by poor oral hygiene.”
@@ -175,7 +164,6 @@ export function Visit() {
     <section className="section" id="visit" aria-labelledby="visit-title">
       <div className="container visit-inner">
         <div className="visit-copy reveal">
-          <p className="eyebrow">Visit the clinic</p>
           <h2 id="visit-title" className="section-title">Find us in Molo, <em>right across Baluarte Elementary.</em></h2>
           <ul className="info-list">
             <li>
@@ -227,7 +215,6 @@ export function Faq() {
     <section className="section section-cream" id="faq" aria-labelledby="faq-title">
       <div className="container faq-inner">
         <div className="section-head reveal">
-          <p className="eyebrow">FAQ</p>
           <h2 id="faq-title" className="section-title">Good to know before your visit.</h2>
         </div>
         <div className="faq-list">

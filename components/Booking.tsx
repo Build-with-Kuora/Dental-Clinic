@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import {
-  DAYS_AHEAD, SLOTS_AM, SLOTS_PM, downloadIcs, loadBookings, makeRef, normalizePhone,
+  ALL_SLOTS, DAYS_AHEAD, SLOTS_AM, SLOTS_PM, downloadIcs, loadBookings, makeRef, normalizePhone,
   openCount, saveBookings, slotStatus, smsLink, type Booking as BookingRecord,
 } from "@/lib/bookings";
 import { CLINIC } from "@/lib/clinic";
@@ -13,6 +13,8 @@ import { useSite } from "./SiteProvider";
 
 type Step = 1 | 2 | 3;
 type Field = "name" | "phone" | "email" | "consent";
+
+const STEP_LABELS = ["Service", "Schedule", "Your details"] as const;
 
 const EMPTY_FORM = { name: "", phone: "", email: "", ptype: "New patient", notes: "", consent: false };
 
@@ -30,6 +32,7 @@ export function Booking() {
   const [done, setDone] = useState<BookingRecord | null>(null);
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
   const [stripEdge, setStripEdge] = useState({ start: true, end: false });
+  const [showAllDates, setShowAllDates] = useState(false);
 
   const mainRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -63,6 +66,23 @@ export function Booking() {
       return { key, d, i, open, isSun, tag };
     });
   }, [now, bookings]);
+
+  // Start the strip at the first bookable day, and show a week unless the visitor asks for more
+  const firstOpen = Math.max(0, days.findIndex((d) => d.open > 0));
+  const visibleDays = showAllDates ? days.slice(firstOpen) : days.slice(firstOpen, firstOpen + 7);
+
+  const pickNextAvailable = () => {
+    if (!now) return;
+    for (const d of days) {
+      if (d.isSun || d.open === 0) continue;
+      const slot = ALL_SLOTS.find((sl) => slotStatus(d.key, sl, bookings, now) === "open");
+      if (slot) {
+        setDate(d.key);
+        setTime(slot);
+        return;
+      }
+    }
+  };
 
   const scrollToMain = () => {
     const main = mainRef.current;
@@ -107,7 +127,12 @@ export function Booking() {
   const pickService = (id: string) => {
     setService(id);
     clearTimeout(advanceTimer.current);
-    // Small delay so the selection is visible before moving on
+  };
+
+  // Tap or click moves on after a beat; keyboard and screen-reader users press Continue themselves
+  const advanceFromService = (e: MouseEvent<HTMLInputElement>) => {
+    if (e.detail === 0) return;
+    clearTimeout(advanceTimer.current);
     advanceTimer.current = setTimeout(() => goTo(2), 280);
   };
 
@@ -139,7 +164,7 @@ export function Booking() {
       consent: !form.consent,
     };
     setErrors(errs);
-    const first = (["name", "phone", "email"] as const).find((f) => errs[f]);
+    const first = (["name", "phone", "email", "consent"] as const).find((f) => errs[f]);
     if (first) document.querySelector<HTMLInputElement>(`#booking-form [name="${first}"]`)?.focus();
     return !Object.values(errs).some(Boolean);
   };
@@ -228,8 +253,9 @@ export function Booking() {
           <div className="booking-main" ref={mainRef}>
             {!done && (
               <>
+                <p className="step-now" aria-live="polite">Step {step} of 3: {STEP_LABELS[step - 1]}</p>
                 <ol className="stepper" aria-label="Booking steps">
-                  {(["Service", "Schedule", "Your details"] as const).map((label, i) => {
+                  {STEP_LABELS.map((label, i) => {
                     const n = i + 1;
                     const cls = n === step ? "is-active" : n < step ? "is-done" : undefined;
                     return (
@@ -253,6 +279,7 @@ export function Booking() {
                               value={s.id}
                               checked={service === s.id}
                               onChange={() => pickService(s.id)}
+                              onClick={advanceFromService}
                             />
                             <ServiceIcon id={s.id} />
                             <span className="opt-body">
@@ -282,14 +309,13 @@ export function Booking() {
                           </button>
                         </div>
                       </div>
-                      <div className="date-strip" ref={stripRef} role="listbox" aria-label="Available dates" onScroll={syncStrip}>
-                        {days.map((d) => (
+                      <div className="date-strip" ref={stripRef} role="group" aria-label="Available dates" onScroll={syncStrip}>
+                        {visibleDays.map((d) => (
                           <button
                             key={d.key}
                             type="button"
-                            role="option"
                             className={`date-chip${d.open === 0 ? " is-full" : d.isSun ? " is-sunday" : ""}`}
-                            aria-selected={date === d.key}
+                            aria-pressed={date === d.key}
                             disabled={d.open === 0}
                             aria-label={`${fmtDate(d.key, true)}, ${d.tag}`}
                             onClick={() => pickDate(d.key)}
@@ -299,6 +325,12 @@ export function Booking() {
                             <span className="dt">{d.tag}</span>
                           </button>
                         ))}
+                      </div>
+                      <div className="date-tools">
+                        <button type="button" className="btn-chip" onClick={pickNextAvailable}>Pick the next available time</button>
+                        {days.length > visibleDays.length + firstOpen && (
+                          <button type="button" className="btn-chip" onClick={() => setShowAllDates(true)}>Show more dates</button>
+                        )}
                       </div>
                       {isSunday && (
                         <p className="sunday-note">
@@ -324,24 +356,28 @@ export function Booking() {
                   {step === 3 && (
                     <fieldset className="step is-active">
                       <legend className="step-title">Tell us about you</legend>
+                      <dl className="review">
+                        <div><dt>Service</dt><dd>{svc?.name}</dd></div>
+                        <div><dt>When</dt><dd>{date && time ? `${fmtDate(date)} · ${fmtTime(time)}` : ""}</dd></div>
+                      </dl>
                       <div className="field-grid">
                         <label className={`field${errors.name ? " has-error" : ""}`}>
                           <span>Full name</span>
-                          <input type="text" name="name" autoComplete="name" placeholder="Juan Dela Cruz" required
+                          <input type="text" name="name" autoComplete="name" aria-invalid={!!errors.name} aria-describedby="err-name" placeholder="Juan Dela Cruz" required
                             value={form.name} onChange={(e) => setField("name", e.target.value)} />
-                          <small className="err">Please enter your name.</small>
+                          <small id="err-name" className="err" role="alert">Please enter your name.</small>
                         </label>
                         <label className={`field${errors.phone ? " has-error" : ""}`}>
                           <span>Mobile number</span>
-                          <input type="tel" name="phone" autoComplete="tel" inputMode="tel" placeholder="0917 123 4567" required
+                          <input type="tel" name="phone" autoComplete="tel" aria-invalid={!!errors.phone} aria-describedby="err-phone" inputMode="tel" placeholder="0917 123 4567" required
                             value={form.phone} onChange={(e) => setField("phone", e.target.value)} />
-                          <small className="err">Enter a valid PH mobile number, like 0917 123 4567.</small>
+                          <small id="err-phone" className="err" role="alert">Enter a valid PH mobile number, like 0917 123 4567.</small>
                         </label>
                         <label className={`field${errors.email ? " has-error" : ""}`}>
                           <span>Email <i>(optional)</i></span>
-                          <input type="email" name="email" autoComplete="email" placeholder="you@email.com"
+                          <input type="email" name="email" autoComplete="email" aria-invalid={!!errors.email} aria-describedby="err-email" placeholder="you@email.com"
                             value={form.email} onChange={(e) => setField("email", e.target.value)} />
-                          <small className="err">That email doesn&apos;t look right.</small>
+                          <small id="err-email" className="err" role="alert">That email doesn&apos;t look right.</small>
                         </label>
                         <div className="field">
                           <span>Patient type</span>
@@ -361,24 +397,32 @@ export function Booking() {
                             value={form.notes} onChange={(e) => setField("notes", e.target.value)} />
                         </label>
                         <label className="check field-full">
-                          <input type="checkbox" name="consent" required checked={form.consent}
+                          <input type="checkbox" name="consent" required aria-invalid={!!errors.consent} aria-describedby="err-consent" checked={form.consent}
                             onChange={(e) => setField("consent", e.target.checked)} />
                           <span>I understand this is a booking request. The clinic will confirm my schedule by text or call.</span>
                         </label>
-                        {errors.consent && <small className="err is-shown field-full">Please tick the box to continue.</small>}
+                        {errors.consent && <small id="err-consent" className="err is-shown field-full" role="alert">Please tick the box to continue.</small>}
                       </div>
                     </fieldset>
                   )}
 
+                  {!stepValid && (
+                    <p className="step-hint" id="step-hint">
+                      {step === 1 ? "Choose a service to continue." : "Pick a date and a time to continue."}
+                    </p>
+                  )}
                   <div className="step-actions">
                     {step > 1 && (
                       <button type="button" className="btn btn-outline" onClick={() => goTo((step - 1) as Step)}>Back</button>
                     )}
-                    <button type="button" className="btn btn-navy" disabled={!stepValid} onClick={onNext}>
-                      {step === 3 ? "Confirm booking" : "Continue"}
+                    <button type="button" className="btn btn-navy" disabled={!stepValid} aria-describedby={stepValid ? undefined : "step-hint"} onClick={onNext}>
+                      {step === 3 ? "Send request" : "Continue"}
                     </button>
                   </div>
                 </form>
+                <p className="call-line">
+                  Prefer to talk to us? <a href={CLINIC.phoneTel}>Call {CLINIC.phoneDisplay}</a>
+                </p>
               </>
             )}
 
@@ -387,10 +431,9 @@ export function Booking() {
                 <div className="success-badge" aria-hidden="true">
                   <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24" /><path d="M15 27l7 7 15-16" /></svg>
                 </div>
-                <h3>Request sent!</h3>
+                <h3>One last step: text the clinic</h3>
                 <p className="success-lead">
-                  Reference <strong>{done.ref}</strong>. We will text{" "}
-                  <strong>{done.phone.replace(/^(\d{4})(\d{3})(\d{4})$/, "$1 $2 $3")}</strong> to confirm your schedule.
+                  Your request <strong>{done.ref}</strong> is saved on this device only. Tap the button below to send it to the clinic.
                 </p>
                 <div className="success-card">
                   <div><span>Service</span><strong>{done.serviceName}</strong></div>
@@ -398,9 +441,17 @@ export function Booking() {
                   <div><span>Time</span><strong>{fmtTime(done.time)}</strong></div>
                   <div><span>Patient</span><strong>{done.name} ({done.type})</strong></div>
                 </div>
+                <ol className="next-steps">
+                  <li>Send the pre-filled text to the clinic.</li>
+                  <li>
+                    The clinic replies to <strong>{done.phone.replace(/^(\d{4})(\d{3})(\d{4})$/, "$1 $2 $3")}</strong> to confirm
+                    your schedule, Monday to Saturday, 9 AM to 5 PM.
+                  </li>
+                  <li>Arrive a few minutes early on the day.</li>
+                </ol>
                 <div className="success-actions">
                   <a className="btn btn-gold" href={smsLink(done)}>
-                    <MessageIcon /> Text the clinic now
+                    <MessageIcon /> Send request by text
                   </a>
                   <button className="btn btn-outline" type="button" onClick={() => { downloadIcs(done); toast("Calendar file downloaded."); }}>
                     <CalendarPlusIcon /> Add to calendar
