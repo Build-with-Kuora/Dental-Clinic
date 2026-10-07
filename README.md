@@ -1,39 +1,48 @@
 # Capizonda Dental Clinic: Demo Website
 
-This is a static, mobile-first site for Capizonda Dental Clinic in Molo, Iloilo City. It has no build step.
+This is a mobile-first Next.js (App Router) site for Capizonda Dental Clinic in Molo, Iloilo City. Both pages (`/` and `/book`) are prerendered as static HTML at build time.
 
 ## Structure
 
 ```
-index.html            Page markup (hero + motion video, services, why us, dentist, booking, visit, FAQ)
-css/styles.css        All styles (brand tokens at the top)
-js/main.js            Nav, scroll reveals, "open now" status (PH time), mobile action bar
-js/booking.js         3-step booking flow (service, schedule, details), service list lives here
-js/motion.js          Motion graphic video (GSAP timeline, ~27s loop, portrait layout on phones)
-assets/img/           Logo layers, dentist photo, clinic photo, favicon, social share image
+app/layout.tsx           Fonts (next/font), metadata, Open Graph
+app/page.tsx             Home page
+app/book/page.tsx        Booking page (/book, accepts ?service=<id> to preselect)
+app/globals.css          All styles (brand tokens at the top)
+components/Sections.tsx  Static sections: hero, services, why us, dentist, visit, FAQ, footer
+components/MotionVideo.tsx  Motion graphic video (GSAP timeline, ~27s loop, 4:5 layout on phones)
+components/Booking.tsx   3-step booking flow used on /book
+components/ClientBits.tsx   Scroll reveals, mobile Call/Book bar, live clinic hours
+components/SiteHeader.tsx   Sticky header with mobile menu
+components/SiteProvider.tsx Toast messages
+lib/services.tsx         Service list and icons
+lib/bookings.ts          Slots, storage, SMS link, calendar file
+lib/clinic.ts            Phone, address, map links
+public/assets/img/       Logo layers, dentist photo, clinic photo, favicon, social share image
 ```
 
 ## Run locally
 
 ```
-python -m http.server 5173
+npm install
+npm run dev
 ```
 
-Then open http://127.0.0.1:5173
+Then open http://localhost:3000
 
-## Deploy
+To run a production build instead, use `npm run build` and then `npm start`.
 
-Any static host works:
+## Deploy to Vercel
 
-- **Netlify Drop**: drag the project folder onto https://app.netlify.com/drop
-- **Vercel**: `npx vercel` in this folder
-- **GitHub Pages**: push to a repo, then go to Settings > Pages and deploy from the branch root
+1. Push this repo to GitHub.
+2. On https://vercel.com/new, import the repo. Vercel detects Next.js, so leave the default settings.
+3. Click Deploy.
 
-After deploying, change `og:image` in `index.html` to the absolute URL (for example `https://your-domain/assets/img/og-cover.jpg`). This makes link previews show the logo in Messenger and Facebook.
+The Open Graph image URL uses Vercel's production domain automatically (`VERCEL_PROJECT_PRODUCTION_URL`), so link previews in Messenger and Facebook show the logo.
 
 ## Demo limitations
 
-- Booking requests are saved only in the visitor's browser (localStorage). The clinic is not notified automatically. On the success screen, the "Text the clinic now" button opens an SMS to 0962 687 6076 with the booking details already filled in. For production, connect the form to a backend such as Formspree, Google Sheets, or a database.
-- Some time slots show as "booked". These are simulated so the demo calendar looks realistic. See `seededTaken()` in `js/booking.js`.
-- Confirm the service list and durations with the clinic. Edit `SERVICES` in `js/booking.js`.
-- The dentist photo was cropped from a low-resolution poster. Replace `assets/img/dr-capizonda.jpg` and `dr-capizonda-head.jpg` with HD photos.
+- Booking requests are saved only in the visitor's browser (localStorage). The clinic is not notified automatically. On the success screen, the "Text the clinic now" button opens an SMS to 0962 687 6076 with the booking details already filled in. For production, replace `saveBookings` in `lib/bookings.ts` with an API route that writes to a database or sends an email.
+- Some time slots show as "booked". These are simulated so the demo calendar looks realistic (`seededTaken` in `lib/bookings.ts`).
+- Confirm the service list and durations with the clinic (`SERVICES` in `lib/services.tsx`).
+- The dentist photo was cropped from a low-resolution poster. Replace `public/assets/img/dr-capizonda.jpg` and `dr-capizonda-head.jpg` with HD photos.
