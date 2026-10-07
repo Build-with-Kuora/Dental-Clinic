@@ -22,10 +22,10 @@
   --success: #1F8A70;
   --danger: #C0392B;
 
-  --f-display: "Montserrat", system-ui, sans-serif;
-  --f-body: "Plus Jakarta Sans", system-ui, sans-serif;
-  --f-serif: "Instrument Serif", Georgia, serif;
-  --f-script: "Great Vibes", cursive;
+  --f-display: var(--font-montserrat), system-ui, sans-serif;
+  --f-body: var(--font-jakarta), system-ui, sans-serif;
+  --f-serif: var(--font-instrument), Georgia, serif;
+  --f-script: var(--font-vibes), cursive;
 
   --radius-sm: 10px;
   --radius: 16px;
@@ -97,8 +97,7 @@ p { margin: 0; }
 }
 .eyebrow::before { content: ""; width: 24px; height: 2px; background: currentColor; }
 .eyebrow-light { color: var(--gold-400); }
-.eyebrow .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ADE80; box-shadow: 0 0 0 4px rgba(74, 222, 128, .2); }
-.eyebrow-light:has(.dot)::before { display: none; }
+.hero .eyebrow::before { display: none; }
 
 .section { padding: 80px 0; }
 .section-navy { background: var(--navy-800); color: var(--white); }
@@ -431,6 +430,7 @@ p { margin: 0; }
 .service-book {
   font-family: var(--f-display); font-size: 13px; font-weight: 700; color: var(--navy-700);
   display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 6px 0;
+  text-decoration: none;
 }
 .service-book svg { width: 16px; height: 16px; transition: transform .3s var(--ease); }
 .service-card:hover .service-book svg { transform: translateX(4px); }
@@ -595,7 +595,7 @@ p { margin: 0; }
 }
 .booking-summary::after {
   content: ""; position: absolute; right: -60px; bottom: -60px; width: 200px; height: 240px;
-  background: url("../assets/img/tooth-mark.png") center / contain no-repeat; opacity: .07; transform: rotate(-12deg);
+  background: url("/assets/img/tooth-mark.png") center / contain no-repeat; opacity: .07; transform: rotate(-12deg);
 }
 .booking-summary h3 { font-family: var(--f-display); font-size: 17px; font-weight: 700; color: var(--gold-400); }
 .booking-summary dl { margin: 14px 0 0; display: grid; gap: 0; }
@@ -712,10 +712,22 @@ p { margin: 0; }
 }
 .toast.is-shown { transform: translate(-50%, 0); opacity: 1; }
 
+/* ---------- Booking page ---------- */
+.page-hero { background: linear-gradient(180deg, var(--navy-900) 0%, var(--navy-700) 100%); color: var(--white); padding: 40px 0 44px; }
+.crumbs { display: flex; gap: 8px; font-size: 13.5px; color: rgba(255, 255, 255, .65); }
+.crumbs a { text-decoration: none; }
+.crumbs a:hover { color: var(--gold-400); }
+.page-hero h1 { margin-top: 14px; font-family: var(--f-display); font-weight: 800; font-size: clamp(32px, 7vw, 48px); letter-spacing: -.02em; }
+.page-hero p { margin-top: 10px; max-width: 560px; font-size: 17px; color: rgba(255, 255, 255, .78); }
+.book-section { background: var(--cream); padding: 32px 0 80px; }
+@media (min-width: 900px) {
+  .page-hero { padding: 56px 0 60px; }
+  .book-section { padding: 48px 0 112px; }
+}
+
 /* ---------- Reveal on scroll ---------- */
-.reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
-.reveal.is-in { opacity: 1; transform: none; }
-.no-js .reveal { opacity: 1; transform: none; }
+.js .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+.js .reveal.is-in { opacity: 1; transform: none; }
 
 /* =========================================================
    Breakpoints
@@ -793,5 +805,5 @@ p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-  .reveal { opacity: 1; transform: none; }
+  .js .reveal { opacity: 1; transform: none; }
 }
